@@ -193,19 +193,24 @@ if __name__ == "__main__":
             todos_produtos.extend(produtos)
         
         if todos_produtos:
-            # Converter para DataFrame para remover duplicados
+            # Converter para DataFrame
             df = pd.DataFrame(todos_produtos)
-            df_sem_duplicados = df.drop_duplicates(subset=['Nome do Produto'])
-            todos_produtos = df_sem_duplicados.to_dict('records')
             
-            # Ordenar por quantidade vendida (decrescente)
-            todos_produtos = sorted(todos_produtos, key=lambda x: x['Quantidade Vendida'], reverse=True)
+            # Ordenar por quantidade de vendas (decrescente) antes de remover duplicatas
+            df = df.sort_values('Quantidade Vendida', ascending=False)
+            
+            # Remover duplicatas mantendo a primeira ocorrência (que será a com mais vendas)
+            df_sem_duplicados = df.drop_duplicates(subset=['Nome do Produto'], keep='first')
+            
+            # Converter de volta para lista de dicionários
+            todos_produtos = df_sem_duplicados.to_dict('records')
             
             # Criar e formatar planilha
             output_file = 'produtos_shopee.xlsx'
             formatar_planilha(output_file, todos_produtos)
             
             logger.info(f"Total de {len(todos_produtos)} produtos únicos salvos no XLSX")
+            logger.info("Produtos duplicados foram removidos, mantendo os anúncios com mais vendas")
         else:
             logger.error("Nenhum produto encontrado nos arquivos")
             
