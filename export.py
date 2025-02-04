@@ -10,6 +10,7 @@ from openpyxl.drawing.image import Image
 import requests
 from io import BytesIO
 from PIL import Image as PILImage
+from datetime import datetime
 
 # Configurar logging
 logging.basicConfig(level=logging.INFO)
@@ -192,6 +193,11 @@ if __name__ == "__main__":
             todos_produtos.extend(produtos)
         
         if todos_produtos:
+            # Converter para DataFrame para remover duplicados
+            df = pd.DataFrame(todos_produtos)
+            df_sem_duplicados = df.drop_duplicates(subset=['Nome do Produto'])
+            todos_produtos = df_sem_duplicados.to_dict('records')
+            
             # Ordenar por quantidade vendida (decrescente)
             todos_produtos = sorted(todos_produtos, key=lambda x: x['Quantidade Vendida'], reverse=True)
             
@@ -199,7 +205,7 @@ if __name__ == "__main__":
             output_file = 'produtos_shopee.xlsx'
             formatar_planilha(output_file, todos_produtos)
             
-            logger.info(f"Total de {len(todos_produtos)} produtos salvos no XLSX")
+            logger.info(f"Total de {len(todos_produtos)} produtos únicos salvos no XLSX")
         else:
             logger.error("Nenhum produto encontrado nos arquivos")
             
